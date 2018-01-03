@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "kubernetes-client": "^3.17.1"
+  }
+}
