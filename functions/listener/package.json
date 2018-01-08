@@ -2,8 +2,8 @@
   "dependencies": {
     "kubernetes-client": "^3.17.1",
     "lodash": "^4.1.0",
-    "moment": "^2.20.1",
     "node-rdkafka": "^2.2.1",
+    "moment": "^2.20.1",
     "serverless-kubeless": "^0.1.8"
   },
   "devDependencies": {},
