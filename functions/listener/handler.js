@@ -6,11 +6,11 @@ const { checkExist } = require('./lib/k8s')
 const { produce } = require('./lib/kafka')
 const { WATCH_TOPIC } = require('./lib/config')
 
-function publish({ namespace, deployment, howLong, hearAt }) {
+function publish({ spec, howLong, hearAt }) {
   const attemptCount = 0
 
   const message = {
-    namespace, deployment,
+    spec,
     'hear-at': hearAt,
     'started-at': moment().toDate().getTime(),
     'until': moment().add(howLong, 'm').toDate().getTime(),
@@ -21,10 +21,11 @@ function publish({ namespace, deployment, howLong, hearAt }) {
 }
 
 function listen(req, res) {
-  const { namespace, deployment, "how-long": howLong, "hear-at": hearAt } = req.body
+  const { spec, "how-long": howLong, "hear-at": hearAt } = req.body
+  const { namespace, deployment } = spec
 
   checkExist({ namespace, deployment })
-    .then(() => publish({ namespace, deployment, howLong, hearAt }))
+    .then(() => publish({ spec, howLong, hearAt }))
     .then(() => res.status(200).end('Scheduled'))
     .catch(err => {
       if (err && err.code && err.code == 404) {

@@ -30,11 +30,11 @@ function validate(result) {
   throw { status: NOT_READY }
 }
 
-async function publishToWatch({ namespace, deployment, startedAt, until, hearAt, attemptCount }) {
+async function publishToWatch({ spec, startedAt, until, hearAt, attemptCount }) {
   await sleep(SLEEP_SECONDS * 1000)
 
   const message = {
-    namespace, deployment, until,
+    spec, until,
     'started-at': startedAt,
     'hear-at': hearAt,
     'attempt-count': attemptCount + 1
@@ -43,9 +43,9 @@ async function publishToWatch({ namespace, deployment, startedAt, until, hearAt,
   return produce(WATCH_TOPIC, message)
 }
 
-function publishToTell({ namespace, deployment, howLong, hearAt, status}) {
+function publishToTell({ spec, howLong, hearAt, status}) {
   const message = {
-    namespace, deployment, status,
+    spec, status,
     'how-long': howLong,
     'hear-at': hearAt,
   }
@@ -83,21 +83,22 @@ function watch(context) {
   }
 }
 
-function performWatch({ namespace, deployment, until, 'started-at': startedAt, 'hear-at': hearAt, 'attempt-count': attemptCount }) {
+function performWatch({ spec, until, 'started-at': startedAt, 'hear-at': hearAt, 'attempt-count': attemptCount }) {
+  const { namespace, deployment } = spec
   const howLong = moment().diff(moment(startedAt), 'm')
 
   checkTimeout(until)
     .then(() => checkExist({ namespace, deployment }))
     .then(validate)
-    .then(() => publishToTell({ namespace, deployment, howLong, hearAt, status: SUCCESS}))
+    .then(() => publishToTell({ spec, howLong, hearAt, status: SUCCESS}))
     .catch(err => {
       if (_.isObject(err) && err.status === TIME_OUT) {
-        return publishToTell({ namespace, deployment, howLong, hearAt, status: TIME_OUT})
+        return publishToTell({ spec, howLong, hearAt, status: TIME_OUT})
       }
     })
     .catch(err => {
       if (_.isObject(err) && err.status === NOT_READY) {
-        return publishToWatch({ namespace, deployment, startedAt, until, hearAt, attemptCount })
+        return publishToWatch({ spec, startedAt, until, hearAt, attemptCount })
       }
       else {
         throw err
@@ -105,7 +106,7 @@ function performWatch({ namespace, deployment, until, 'started-at': startedAt, '
     })
     .catch(err => {
       console.warn(err)
-      return publishToTell({ namespace, deployment, howLong, hearAt, status: FAIL})
+      return publishToTell({ spec, howLong, hearAt, status: FAIL})
     })
     .catch(err => {
       console.warn('FAILED WITH EVERY FALLBACK')

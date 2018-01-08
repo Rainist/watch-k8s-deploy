@@ -20,10 +20,10 @@ function tell(context) {
   }
 }
 
-function performTell({ status, namespace, deployment, 'how-long': howLong, 'hear-at': hearAt }) {
+function performTell({ status, spec, 'how-long': howLong, 'hear-at': hearAt }) {
   //TODO: actually respond
   const body = {
-    status, namespace, deployment,
+    status, spec,
     'how-long': howLong,
     'hear-at': hearAt
   }
