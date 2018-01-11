@@ -96,6 +96,9 @@ function performWatch({ spec, until, 'started-at': startedAt, 'hear-at': hearAt,
       if (_.isObject(err) && err.status === TIME_OUT) {
         return publishToTell({ spec, howLong, hearAt, status: TIME_OUT})
       }
+      else {
+        throw err
+      }
     })
     .catch(err => {
       if (_.isObject(err) && err.status === NOT_READY) {
