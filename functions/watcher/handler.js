@@ -85,7 +85,8 @@ function watch(context) {
 
 function performWatch({ spec, until, 'started-at': startedAt, 'hear-at': hearAt, 'attempt-count': attemptCount }) {
   const { namespace, deployment } = spec
-  const howLong = moment().diff(moment(startedAt), 'm')
+  const howLongF = moment().diff(moment(startedAt), 's') / 60
+  const howLong = _.round(howLongF, 1)
 
   checkTimeout(until)
     .then(() => checkExist({ namespace, deployment }))

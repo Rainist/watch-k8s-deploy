@@ -25,7 +25,6 @@ function performTell({ status, spec, 'how-long': howLong, 'hear-at': hearAt }) {
   const body = {
     status, spec,
     'how-long': howLong,
-    'hear-at': hearAt
   }
 
   const options = {
