@@ -7,7 +7,7 @@
 #    http://kubeless.io
 
 # Update the service name below with your own service name
-service: wkdlistener
+service: wkd-listener
 
 # Please ensure the serverless-kubeless provider plugin is installed globally.
 # $ npm install -g serverless-kubeless

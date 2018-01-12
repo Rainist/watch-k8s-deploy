@@ -3,7 +3,7 @@
     "lodash": "^4.1.0",
     "request": "^2.83.0",
     "request-promise": "^4.2.2",
-    "serverless-kubeless": "^0.1.8"
+    "serverless-kubeless": "^0.2.4"
   },
   "devDependencies": {},
   "scripts": {
