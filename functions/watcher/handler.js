@@ -7,12 +7,18 @@ const { produce } = require('./lib/kafka')
 const { WATCH_TOPIC, TELL_TOPIC, TIME_OUT, NOT_READY, SUCCESS, FAIL } = require('./lib/config')
 const SLEEP_SECONDS = 30
 
-function sleep(ms) {
+function DeployWatchTimeoutException(message) {
+  this.message = message
+  this.name = 'DeployWatchTimeout'
+}
+
+function sleep(s) {
+  const ms = s * 1000
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
 async function publishToWatch({ spec, startedAt, until, hearAt, attemptCount }) {
-  await sleep(SLEEP_SECONDS * 1000)
+  await sleep(SLEEP_SECONDS)
 
   const message = {
     spec, until,
@@ -34,14 +40,13 @@ function publishToTell({ spec, howLong, hearAt, status}) {
 }
 
 function checkTimeout(until) {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     const untilTime = moment(until)
     const diff = moment().diff(untilTime)
     const isTimedOut = diff > 0
 
     if (isTimedOut) {
-      reject({ diff, status: TIME_OUT })
-      return
+      throw new DeployWatchTimeoutException('Time-out exceeded')
     }
     resolve()
   })
@@ -61,6 +66,7 @@ function watch(context) {
   }
   else {
     console.warn("Couldn't parse context:", context)
+    publishToTell({ status: FAIL })
   }
 }
 
@@ -68,12 +74,14 @@ function performWatch({ spec, until, 'started-at': startedAt, 'hear-at': hearAt,
   const { namespace, deployment } = spec
   const howLongF = moment().diff(moment(startedAt), 's') / 60
   const howLong = _.round(howLongF, 1)
+  const sleepSeconds = attemptCount > 0 ? 0 : 20 // wait 20 seconds if it's the first attempt
 
   checkTimeout(until)
+    .then(() => sleep(sleepSeconds))
     .then(() => assertStatusAsDesired(namespace, deployment))
     .then(() => publishToTell({ spec, howLong, hearAt, status: SUCCESS}))
     .catch(err => {
-      if (_.isObject(err) && err.status === TIME_OUT) {
+      if (err instanceof DeployWatchTimeoutException) {
         return publishToTell({ spec, howLong, hearAt, status: TIME_OUT})
       }
       else {
