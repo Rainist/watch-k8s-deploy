@@ -2,32 +2,13 @@
 
 const _ = require('lodash')
 const moment = require('moment')
-const { checkExist } = require('./lib/k8s')
+const { assertStatusAsDesired, KubeClientDeployNotReadyException } = require('./lib/k8s')
 const { produce } = require('./lib/kafka')
 const { WATCH_TOPIC, TELL_TOPIC, TIME_OUT, NOT_READY, SUCCESS, FAIL } = require('./lib/config')
 const SLEEP_SECONDS = 30
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
-}
-
-function validate(result) {
-  const { status } = result
-  const {
-    replicas: desired,
-    readyReplicas: ready,
-    updatedReplicas: updated,
-    availableReplicas: available
-  } = status
-
-  if (desired === ready &&
-    desired === ready &&
-    desired === updated &&
-    desired === available) {
-    return true
-  }
-
-  throw { status: NOT_READY }
 }
 
 async function publishToWatch({ spec, startedAt, until, hearAt, attemptCount }) {
@@ -89,8 +70,7 @@ function performWatch({ spec, until, 'started-at': startedAt, 'hear-at': hearAt,
   const howLong = _.round(howLongF, 1)
 
   checkTimeout(until)
-    .then(() => checkExist({ namespace, deployment }))
-    .then(validate)
+    .then(() => assertStatusAsDesired(namespace, deployment))
     .then(() => publishToTell({ spec, howLong, hearAt, status: SUCCESS}))
     .catch(err => {
       if (_.isObject(err) && err.status === TIME_OUT) {
@@ -101,7 +81,7 @@ function performWatch({ spec, until, 'started-at': startedAt, 'hear-at': hearAt,
       }
     })
     .catch(err => {
-      if (_.isObject(err) && err.status === NOT_READY) {
+      if (err instanceof KubeClientDeployNotReadyException) {
         return publishToWatch({ spec, startedAt, until, hearAt, attemptCount })
       }
       else {

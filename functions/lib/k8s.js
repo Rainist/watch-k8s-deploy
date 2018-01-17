@@ -1,31 +1,26 @@
 'use strict'
 
-const fs = require('fs')
-const Api = require('kubernetes-client')
-const apiUrl = process.env.K8S_API_URL || 'https://kubernetes.default'
-const tokenFilePath = '/var/run/secrets/kubernetes.io/serviceaccount/token'
-const caFilePath = '/var/run/secrets/kubernetes.io/serviceaccount/ca.crt'
-const token = process.env.K8S_SECRET_TOKEN || fs.readFileSync(tokenFilePath, 'utf8');
-const ca = fs.readFileSync(caFilePath)
+const { Apis, Features, K8SAuthType, DeploymentStatusType } = require('k8s-ops')
+const { deploy } = Features
 
-function v1beta1(ns) {
-  return new Api.Extensions({
-    url: apiUrl,
-    version: 'v1beta1',
-    namespace: ns,
-    ca: ca,
-    auth: {
-      bearer: token
-    },
-    request: {
-      timeout: 3000
-    },
-    promises: true
-  })
+const authType = K8SAuthType.InCluster
+
+function KubeClientDeployNotReadyException(message) {
+  this.message = message
+  this.name = 'KubeClientDeployNotReadyException'
 }
 
-function checkExist({ namespace, deployment }) {
-  return v1beta1(namespace).namespaces.deployments(deployment).get()
+function checkExist(namespace, deployment) {
+  const apis = Apis(authType, namespace)
+  return deploy(apis, deployment).res.get()
 }
 
-module.exports = { checkExist }
+function assertStatusAsDesired(namespace, deployment) {
+  const apis = Apis(authType, namespace)
+
+  return deploy(apis, deployment)
+    .assertStatus(DeploymentStatusType.AsDesired)
+    .catch(err => new KubeClientDeployNotReadyException('Status is not as desired'))
+}
+
+module.exports = { checkExist, assertStatusAsDesired, KubeClientDeployNotReadyException }

@@ -24,7 +24,7 @@ function listen(req, res) {
   const { spec, "how-long": howLong, "hear-at": hearAt } = req.body
   const { namespace, deployment } = spec
 
-  checkExist({ namespace, deployment })
+  checkExist(namespace, deployment)
     .then(() => publish({ spec, howLong, hearAt }))
     .then(() => res.status(200).end('Scheduled'))
     .catch(err => {
