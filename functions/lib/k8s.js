@@ -20,7 +20,9 @@ function assertStatusAsDesired(namespace, deployment) {
 
   return deploy(apis, deployment)
     .assertStatus(DeploymentStatusType.AsDesired)
-    .catch(err => new KubeClientDeployNotReadyException('Status is not as desired'))
+    .catch(err => {
+      throw new KubeClientDeployNotReadyException('Status is not as desired')
+    })
 }
 
 module.exports = { checkExist, assertStatusAsDesired, KubeClientDeployNotReadyException }
