@@ -8,4 +8,4 @@ kubeless function deploy wkd-watcher --runtime nodejs8 \
     --from-file .code.zip \
     --dependencies package.json \
     --handler handler.watch \
-    --trigger-topic check-deploy-status
+    --label topic=check-deploy-status

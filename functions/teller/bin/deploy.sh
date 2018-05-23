@@ -8,4 +8,4 @@ kubeless function deploy wkd-teller --runtime nodejs8 \
     --from-file .code.zip \
     --dependencies package.json \
     --handler handler.tell \
-    --trigger-topic share-deploy-status
+    --label topic=share-deploy-status

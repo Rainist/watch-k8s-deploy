@@ -20,8 +20,9 @@ function publish({ spec, howLong, hearAt }) {
   return produce(WATCH_TOPIC, message)
 }
 
-function listen(req, res) {
-  const { spec, "how-long": howLong, "hear-at": hearAt } = req.body
+function listen(event, context) {
+  const { data: body, extensions: { request: { res } } } = event
+  const { spec, "how-long": howLong, "hear-at": hearAt } = body
   const { namespace, deployment } = spec
 
   checkExist(namespace, deployment)
@@ -36,7 +37,7 @@ function listen(req, res) {
       throw err
     })
     .catch(err => {
-      console.warn(err)
+      console.error(err)
       res.status(500).end('Error')
     })
 }
