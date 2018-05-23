@@ -3,10 +3,10 @@
 const _ = require('lodash')
 const rp = require('request-promise')
 
-function tell(context) {
+function tell(event, context) {
   let message = null
   try {
-    message = JSON.parse(context)
+    message = event.data
   }
   catch (e) {
     console.warn(e)
@@ -16,7 +16,7 @@ function tell(context) {
     performTell(message)
   }
   else {
-    console.warn("Couldn't parse context:", context)
+    console.warn("Couldn't parse event.data:", event.data)
   }
 }
 

@@ -52,10 +52,10 @@ function checkTimeout(until) {
   })
 }
 
-function watch(context) {
+function watch(event, context) {
   let message = null
   try {
-    message = JSON.parse(context)
+    message = event.data
   }
   catch (e) {
     console.warn(e)
@@ -65,7 +65,7 @@ function watch(context) {
     performWatch(message)
   }
   else {
-    console.warn("Couldn't parse context:", context)
+    console.warn("Couldn't parse event.data:", event.data)
     publishToTell({ status: FAIL })
   }
 }

@@ -9,3 +9,10 @@ kubeless function deploy wkd-watcher --runtime nodejs8 \
     --dependencies package.json \
     --handler handler.watch \
     --label topic=check-deploy-status
+
+kubeless topic create check-deploy-status
+
+kubeless --namespace kubeless trigger kafka create wkd-watcher-trigger \
+  --function-selector function=wkd-watcher \
+r --trigger-topic check-deploy-status
+

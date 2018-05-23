@@ -9,3 +9,9 @@ kubeless function deploy wkd-teller --runtime nodejs8 \
     --dependencies package.json \
     --handler handler.tell \
     --label topic=share-deploy-status
+
+kubeless topic create share-deploy-status
+
+kubeless --namespace kubeless trigger kafka create wkd-teller-trigger \
+  --function-selector function=wkd-teller \
+r --trigger-topic share-deploy-status
