@@ -14,4 +14,4 @@ kubeless topic create share-deploy-status
 
 kubeless --namespace kubeless trigger kafka create wkd-teller-trigger \
   --function-selector function=wkd-teller \
-r --trigger-topic share-deploy-status
+  --trigger-topic share-deploy-status
