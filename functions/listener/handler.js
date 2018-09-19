@@ -21,7 +21,7 @@ function publish({ spec, howLong, hearAt }) {
 }
 
 function listen(event, context) {
-  const { data: body, extensions: { request: { res } } } = event
+  const { data: body, extensions: { response: res } } = event
   const { spec, "how-long": howLong, "hear-at": hearAt } = body
   const { namespace, deployment } = spec
 

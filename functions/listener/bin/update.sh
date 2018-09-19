@@ -8,3 +8,4 @@ kubeless function update wkd-listener \
     --from-file .code.zip \
     --dependencies package.json \
     --handler handler.listen
+
